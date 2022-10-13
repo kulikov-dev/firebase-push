@@ -1,5 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.11.0/firebase-app.js";
-import {getMessaging, getToken,onMessage } from "https://www.gstatic.com/firebasejs/9.11.0/firebase-messaging.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/9.11.0/firebase-app.js";
+import {getMessaging, getToken, onMessage} from "https://www.gstatic.com/firebasejs/9.11.0/firebase-messaging.js";
 
 // Web app's Firebase configuration
 // Should be copied during project initialization
@@ -14,9 +14,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
-// URL to webhook on your site for saving an user token.
-const webhook_url = 'YOUR_URL';
-const tokenSentTitle = 'tokenSentToServer';
+// URL to your site webhook for saving an user token.
+const webhook_url = '';
+const tokenSentLocalTitle = 'tokenSentToServer';
 
 // Handle incoming messages. Called when:
 // - a message is received while the app has focus
@@ -24,18 +24,17 @@ const tokenSentTitle = 'tokenSentToServer';
 onMessage(messaging, (payload) => {
     console.log('Message received. ', payload);
 
-    // TODO Update the UI if necessary to show the received message.
+    // TODO Update UI if necessary to show the received message.
 });
 
 // Check if browser supports push-notifications
 if (
     !('Notification' in window &&
-    'serviceWorker' in navigator &&
-    'localStorage' in window &&
-    'fetch' in window &&
-    'postMessage' in window)
-)
-{
+        'serviceWorker' in navigator &&
+        'localStorage' in window &&
+        'fetch' in window &&
+        'postMessage' in window)
+) {
     if (!('Notification' in window)) {
         console.error('Notification not supported');
     } else if (!('serviceWorker' in navigator)) {
@@ -57,7 +56,7 @@ if (
     console.log('Support postMessage', 'postMessage' in window);
 } else {
     if (Notification.permission === 'granted') {
-         getUserToken();
+        getUserToken();
     } else {
         requestPermission();
     }
@@ -78,15 +77,18 @@ function requestPermission() {
 
 // Get user registration token
 function getUserToken() {
-    // Register a service worker to use script with github pages (As firebase required to store serviceWorker only in the root.
+    // Register a service worker to use script with github pages. As firebase required to store serviceWorker only in the root.
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker
             .register("/firebase-push/firebase-messaging-sw.js")
-            .then(function(registration) {
+            .then(function (registration) {
                 console.log("Registration successful, scope is:", registration.scope);
                 // Get registration token. Initially this makes a network call, once retrieved
                 // subsequent calls to getToken will return from cache.
-                getToken(messaging,{vapidKey: 'BKpTvOreKY6M4vca8Qy1GfLda9seP0BaWFnkFaGvstDRknLfwDuTRHNPS8te28IP1Imm9LvZm0Q3GJwz7NuCDQg', serviceWorkerRegistration: registration}).then((currentToken) => {
+                getToken(messaging, {
+                    vapidKey: 'BKpTvOreKY6M4vca8Qy1GfLda9seP0BaWFnkFaGvstDRknLfwDuTRHNPS8te28IP1Imm9LvZm0Q3GJwz7NuCDQg',
+                    serviceWorkerRegistration: registration
+                }).then((currentToken) => {
                     if (currentToken) {
                         sendTokenToServer(currentToken);
                     } else {
@@ -100,8 +102,8 @@ function getUserToken() {
                     setTokenSentToServer(false);
                 });
             })
-            .catch(function(err) {
-                console.log("Service worker registration failed, error:"  , err );
+            .catch(function (err) {
+                console.log("Service worker registration failed, error:", err);
             });
     }
 }
@@ -113,11 +115,12 @@ function sendTokenToServer(currentToken) {
     if (!isTokenSentToServer()) {
         console.log('Sending token to server...');
         window.localStorage.setItem('token', currentToken);
-        // TODO: Send the current token to your server.
+
         setTokenSentToServer(true);
         if (webhook_url) {
-            $.post(webhook_url, {token: currentToken}, function (data, status) {
-                console.log('Token sent to server...');
+            // TODO: Send the current token to your server.
+            $.post(webhook_url, {token: currentToken}, function () {
+                console.log('Token sent to the server...');
             });
         }
 
@@ -128,10 +131,10 @@ function sendTokenToServer(currentToken) {
 
 // Update local information about token been sent to the server
 function setTokenSentToServer(sent) {
-    window.localStorage.setItem(tokenSentTitle, sent ? '1' : '0');
+    window.localStorage.setItem(tokenSentLocalTitle, sent ? '1' : '0');
 }
 
 // Check local information if token was sent to server
 function isTokenSentToServer() {
-    return window.localStorage.getItem(tokenSentTitle) === '1';
+    return window.localStorage.getItem(tokenSentLocalTitle) === '1';
 }
