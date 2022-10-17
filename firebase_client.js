@@ -24,6 +24,15 @@ const tokenSentLocalTitle = 'tokenSentToServer';
 onMessage(messaging, (payload) => {
     console.log('Message received. ', payload);
 
+    // In case if need to show notification even for current focused tab of your page
+    payload.data.data = JSON.parse(JSON.stringify(payload.data));
+    navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope').then(registration => {
+        registration.showNotification(
+            payload.data.title,
+            payload.data
+        )
+    });
+    
     // TODO Update UI if necessary to show the received message.
 });
 
