@@ -16,7 +16,8 @@ There are four scripts here:
 The best way to test client side is use Postman with sending POST messages with:
 * This auth info: Authorization - Key=your-server-key
 * To this address: https://fcm.googleapis.com/fcm/send 
-* With this data:
+* With this data (you can send up to 500 user tokens in one message):
+```json
 {
     "data": {
     "title": "Title",
@@ -24,7 +25,8 @@ The best way to test client side is use Postman with sending POST messages with:
     "icon": "https://kulikov-dev.github.io/firebase-push/notification_logo.jpg",
     "click_action": "https://kulikov-dev.github.io/firebase-push/"
   },
-  "to": "user-token-id"			// You can send up to 500 user tokens in one message. 
+  "to": "user-token-id" 
 }
+```
 * To get 'Server key' you need to enable 'Cloud Messaging API (Legacy)'.
 
